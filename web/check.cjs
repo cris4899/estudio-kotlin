@@ -19,9 +19,14 @@ run(fs.readFileSync(path.join(__dirname,'theme.js'),'utf8'));
 run(fs.readFileSync(path.join(__dirname,'content.js'),'utf8'));
 run(fs.readFileSync(path.join(__dirname,'app.js'),'utf8'));
 assert.equal(run('lessons.length'),11);
-assert.equal(run('questions.length'),33);
+assert.equal(run('questions.length'),73);
 assert.equal(run('written.length'),6);
-assert.equal(run('new Set(questions.map(q=>q.id)).size'),33);
+assert.equal(run('new Set(questions.map(q=>q.id)).size'),73);
+assert.equal(run('questions.filter(q=>q.category === "function").length'),40);
+assert.equal(run('questions.filter(q=>q.category === "function").every(q=>q.prompt.startsWith("¿Qué hace esta función") && q.code.includes("fun ") && new Set(q.options).size === 4)'),true);
+run('startSession("functions")');
+assert.equal(run('session.items.length'),40);
+assert.equal(run('session.items.every(q=>q.category === "function")'),true);
 assert.equal(run('questions.every(q => q.options.length === 4 && Number.isInteger(q.correct) && q.correct >= 0 && q.correct < 4 && lessons.some(l => l.id === q.topic) && q.explanation.length > 10)'),true);
 for (let i=0;i<100;i++) {
   assert.equal(run('buildExam().length'),10);
