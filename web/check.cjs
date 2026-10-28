@@ -10,11 +10,12 @@ function element(selector) {
 }
 let stored = null;
 const context = vm.createContext({
-  document:{querySelector:element},
+  document:{querySelector:element,documentElement:{dataset:{}}},
   localStorage:{getItem(){return stored;},setItem(key,value){stored=value;}},
   location:{hash:'#preguntas'},window:{addEventListener(){},scrollTo(){}},confirm:()=>true
 });
 const run = code => vm.runInContext(code,context);
+run(fs.readFileSync(path.join(__dirname,'theme.js'),'utf8'));
 run(fs.readFileSync(path.join(__dirname,'content.js'),'utf8'));
 run(fs.readFileSync(path.join(__dirname,'app.js'),'utf8'));
 assert.equal(run('lessons.length'),11);
@@ -37,7 +38,7 @@ assert.equal(run('progress.answers'),2);
 assert.equal(run('progress.correct'),1);
 assert.equal(JSON.parse(stored).answers,2);
 stored='{"done":["variables","invalid"],"wrong":["v1","invalid"],"answers":-1,"correct":99,"exams":[{"score":9}]}';
-assert.equal(run('JSON.stringify(readProgress())'),' {"done":["variables"],"wrong":["v1"],"answers":0,"correct":0,"exams":[]}'.trim());
+assert.equal(run('JSON.stringify(readProgress())'),'{"lastLesson":null,"done":["variables"],"wrong":["v1"],"answers":0,"correct":0,"exams":[]}');
 stored='broken'; assert.equal(run('readProgress().answers'),0);
 for (const l of run('lessons.map(l=>l.id)')) {
   run(`renderStudy(lessons.find(l=>l.id===${JSON.stringify(l)}))`);
@@ -58,4 +59,14 @@ run('startSession("written","w1"); session.responses.w1={code:"test"}; session.r
 assert.ok(element('#solution-area').innerHTML.includes('isUpperCase'));
 assert.equal(run('escapeHTML("<>&")'),'&lt;&gt;&amp;');
 for (const source of run('Object.values(sources)')) assert.ok(fs.existsSync(path.resolve(__dirname,decodeURIComponent(source[1]))));
-console.log('OK: banco de preguntas, 100 simulacros, fallos, almacenamiento, 11 lecciones, examen completo y escape de código.');
+run('applyTheme("dark")');
+assert.equal(run('document.documentElement.dataset.theme'),'dark');
+assert.equal(element('#theme-toggle').textContent,'Modo claro');
+run('applyTheme("light")');
+assert.equal(run('document.documentElement.dataset.theme'),'light');
+assert.equal(element('#theme-toggle').textContent,'Modo oscuro');
+run('progress.done=["variables"]; renderStudy(lessons.find(l=>l.id==="nulos"))');
+assert.equal(JSON.parse(stored).lastLesson,'nulos');
+assert.equal(run('readProgress().lastLesson'),'nulos');
+assert.equal(run('readProgress().done[0]'),'variables');
+console.log('OK: preguntas, simulacros, fallos, progreso persistente, último bloque, temas claro/oscuro y escape de código.');

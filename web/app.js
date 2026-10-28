@@ -4,11 +4,12 @@ const KEY = 'kotlin-cuaderno-v1';
 const main = document.querySelector('main');
 let storageAvailable = true;
 function readProgress() {
-  const empty = {done:[],wrong:[],answers:0,correct:0,exams:[]};
+  const empty = {done:[],wrong:[],answers:0,correct:0,exams:[],lastLesson:null};
   try {
     const value = JSON.parse(localStorage.getItem(KEY));
     if (!value || typeof value !== 'object') return empty;
     return {
+      lastLesson:lessons.some(l => l.id === value.lastLesson) ? value.lastLesson : null,
       done:Array.isArray(value.done) ? value.done.filter(id => lessons.some(l => l.id === id)) : [],
       wrong:Array.isArray(value.wrong) ? value.wrong.filter(id => questions.some(q => q.id === id)) : [],
       answers:Number.isSafeInteger(value.answers) && value.answers >= 0 ? value.answers : 0,
@@ -63,11 +64,12 @@ function renderRoute() {
     if (session) renderQuestion(); else renderQuizHome();
   } else {
     session = null;
-    renderStudy(lessons.find(l => l.id === hash[1]) || lessons.find(l => !progress.done.includes(l.id)) || lessons[0]);
+    renderStudy(lessons.find(l => l.id === hash[1]) || lessons.find(l => l.id === progress.lastLesson) || lessons.find(l => !progress.done.includes(l.id)) || lessons[0]);
   }
   focusContent();
 }
 function renderStudy(lesson) {
+  if (progress.lastLesson !== lesson.id) { progress.lastLesson = lesson.id; save(); }
   const index = lessons.indexOf(lesson);
   const done = progress.done.includes(lesson.id);
   const source = sources[lesson.source];
@@ -175,7 +177,14 @@ function renderResults() {
 }
 document.querySelector('#reset').addEventListener('click',() => {
   if (!confirm('¿Borrar lecciones estudiadas, estadísticas y preguntas falladas de este navegador?')) return;
-  progress = {done:[],wrong:[],answers:0,correct:0,exams:[]}; session = null; save(); renderRoute();
+  progress = {done:[],wrong:[],answers:0,correct:0,exams:[],lastLesson:null}; session = null; save(); renderRoute();
+});
+applyTheme(document.documentElement.dataset.theme);
+document.querySelector('#theme-toggle').addEventListener('click',() => {
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(theme);
+  try { localStorage.setItem(THEME_KEY,theme); }
+  catch { storageAvailable = false; storageNote(); }
 });
 window.addEventListener('hashchange',renderRoute);
 storageNote(); renderRoute();
