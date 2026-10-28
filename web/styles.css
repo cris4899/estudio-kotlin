@@ -22,3 +22,4 @@ main:focus{outline:none}
 [data-theme="dark"] .btn.secondary:hover,[data-theme="dark"] .option:hover:not(:disabled){background:#314333}
 [data-theme="dark"] progress::-webkit-progress-bar{background:#394b3e}
 @media(max-width:650px){.topbar{gap:12px}.theme-toggle{padding:8px 12px;margin-left:auto}}
+.sidebar{min-width:0}.lesson-nav{max-width:100%}
