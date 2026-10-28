@@ -1,0 +1,8 @@
+.git
+tmp
+*.pdf
+*.pptx
+web/check.cjs
+web/LEEME.md
+README.md
+!web/apuntes/*.pdf

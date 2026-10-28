@@ -1,0 +1,6 @@
+/tmp/
+/*.pdf
+/*.pptx
+.vercel/
+.env*
+node_modules/
